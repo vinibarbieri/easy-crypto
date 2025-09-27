@@ -23,8 +23,8 @@ export default function WalletInfo({ eoa, smartWallet, kycSessionId }: WalletInf
               <span className="text-blue-400 font-semibold text-sm">EOA</span>
               <div className="w-2 h-2 bg-green-400 rounded-full"></div>
             </div>
-            <p className="font-mono text-xs break-all text-gray-200 bg-gray-800 p-2 rounded">
-              {eoa.address.slice(0, 10)}...{eoa.address.slice(-8)}
+            <p className="font-mono text-sm break-all text-gray-200 bg-gray-800 p-2 rounded">
+              {eoa.address}
             </p>
           </div>
           
@@ -37,9 +37,9 @@ export default function WalletInfo({ eoa, smartWallet, kycSessionId }: WalletInf
                 <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
               )}
             </div>
-            <p className="font-mono text-xs break-all text-gray-200 bg-gray-800 p-2 rounded">
+            <p className="font-mono text-sm break-all text-gray-200 bg-gray-800 p-2 rounded">
               {smartWallet?.accountAbstraction ? 
-                `${smartWallet.accountAbstraction.slice(0, 10)}...${smartWallet.accountAbstraction.slice(-8)}` : 
+                `${smartWallet.accountAbstraction}` : 
                 'N/A'
               }
             </p>
@@ -54,9 +54,9 @@ export default function WalletInfo({ eoa, smartWallet, kycSessionId }: WalletInf
                 <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
               )}
             </div>
-            <p className="font-mono text-xs break-all text-gray-200 bg-gray-800 p-2 rounded">
+            <p className="font-mono text-sm break-all text-gray-200 bg-gray-800 p-2 rounded">
               {kycSessionId ? 
-                `${kycSessionId.slice(0, 8)}...${kycSessionId.slice(-8)}` : 
+                `${kycSessionId}` : 
                 'N/A'
               }
             </p>

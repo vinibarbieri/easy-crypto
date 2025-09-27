@@ -28,9 +28,9 @@ export default function ApiResponse({ isLoading, error, responseJson, apiCalled 
         </div>
       )}
       
-      <div className="min-h-[200px] bg-gray-900 rounded-xl border border-gray-600 p-4">
+      <div className="min-h-[200px] flex bg-gray-900 rounded-xl border border-gray-600 p-4">
         {error ? (
-          <div className="space-y-2">
+          <div className="space-y-2 w-full">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-red-400">❌</span>
               <span className="text-red-400 font-semibold">Error</span>
@@ -40,7 +40,7 @@ export default function ApiResponse({ isLoading, error, responseJson, apiCalled 
             </pre>
           </div>
         ) : responseJson ? (
-          <div className="space-y-2">
+          <div className="space-y-2 w-full">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-green-400">✅</span>
               <span className="text-green-400 font-semibold">Success</span>
@@ -50,7 +50,7 @@ export default function ApiResponse({ isLoading, error, responseJson, apiCalled 
             </pre>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center w-full text-gray-500">
             <div className="text-center">
               <div className="text-4xl mb-2">📋</div>
               <p>No response yet</p>
