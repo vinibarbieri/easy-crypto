@@ -17,6 +17,8 @@ import WalletInfo from './components/wallet/WalletInfo';
 import Button from './components/ui/button';
 import Tabs from './components/ui/tabs';
 import ApiResponse from './components/api-response/apiResponse';
+import Modal from './components/ui/modal';
+import KycForm from './components/kyc/KycForm';
 
 export default function Home() {
   const [eoa, setEoa] = useState<PrivateKeyAccount | null>(null);
@@ -28,6 +30,9 @@ export default function Home() {
   const [responseJson, setResponseJson] = useState<object | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+
+  // Modal states
+  const [isKycModalOpen, setIsKycModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     let pk = localStorage.getItem('testerPrivateKey');
@@ -101,24 +106,33 @@ export default function Home() {
     alert('TODO: Implement the call to /api/get-history');
   };
 
-  const handleStartKyc = async () => {
+  const handleStartKyc = async (kycUserData: any) => {
     setIsLoading(true);
     setError('');
     setResponseJson(null);
     try {
       setApiCalled('POST /kyc/individual-verification-sessions/standard');
-      const data = await startKyc();
+      const data = await startKyc(kycUserData);
       
       setResponseJson(data);
       if (data.session && data.session.id) {
         setKycSessionId(data.session.id);
       }
+      setIsKycModalOpen(false); // Fechar modal após sucesso
     } catch (err: any) {
       setError(err.message);
       setResponseJson({ error: err.message });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleOpenKycModal = () => {
+    setIsKycModalOpen(true);
+  };
+
+  const handleCloseKycModal = () => {
+    setIsKycModalOpen(false);
   };
 
   const handleCheckKycStatus = async () => {
@@ -171,7 +185,7 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen p-4 font-sans">
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen p-4 font-sans scrollbar-thin overflow-y-auto">
       <main className="max-w-7xl mx-auto flex flex-col gap-4">
         <Header />
 
@@ -250,7 +264,7 @@ export default function Home() {
               <div className="space-y-2">
                 <div className="flex flex-col gap-2">
                   <Button
-                    onClick={handleStartKyc}
+                    onClick={handleOpenKycModal}
                     disabled={isLoading}
                     color="purple"
                     icon="🚀"
@@ -298,6 +312,20 @@ export default function Home() {
           responseJson={responseJson}
           apiCalled={apiCalled}
         />
+
+        {/* KYC Modal */}
+        <Modal
+          isOpen={isKycModalOpen}
+          onClose={handleCloseKycModal}
+          title="Iniciar Processo KYC"
+          size="xl"
+        >
+          <KycForm
+            onSubmit={handleStartKyc}
+            onCancel={handleCloseKycModal}
+            isLoading={isLoading}
+          />
+        </Modal>
       </main>
     </div>
   );

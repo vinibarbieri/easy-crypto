@@ -28,7 +28,7 @@ export default function ApiResponse({ isLoading, error, responseJson, apiCalled 
         </div>
       )}
       
-      <div className="min-h-[200px] flex bg-gray-900 rounded-xl border border-gray-600 p-4">
+      <div className="min-h-[200px] flex bg-gray-900 rounded-xl border border-gray-600 p-4 scrollbar-thin overflow-y-auto">
         {error ? (
           <div className="space-y-2 w-full">
             <div className="flex items-center gap-2 mb-3">

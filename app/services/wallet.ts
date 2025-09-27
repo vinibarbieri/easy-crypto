@@ -1,4 +1,3 @@
-// Serviços relacionados à carteira inteligente
 export interface SmartWallet {
   id: string;
   accountAbstraction: string;
@@ -21,12 +20,16 @@ export interface GetWalletResponse {
 }
 
 export interface PortfolioResponse {
-  // Defina a estrutura baseada na resposta real da API
-  [key: string]: any;
+  tokens: string[],
+  nfts: string[],
+  portfolio: string[];
 }
 
+
 /**
- * Cria uma nova carteira inteligente
+ * @description Cria uma nova carteira inteligente
+ * @param data - Dados da carteira para criação
+ * @returns Resposta da API
  */
 export async function createSmartWallet(data: CreateWalletRequest): Promise<CreateWalletResponse> {
   const response = await fetch('/api/wallet/create', {
@@ -45,8 +48,11 @@ export async function createSmartWallet(data: CreateWalletRequest): Promise<Crea
   return result;
 }
 
+
 /**
- * Busca uma carteira existente pelo EOA
+ * @description Busca uma carteira existente pelo EOA
+ * @param externallyOwnedAccount - Endereço da EOA
+ * @returns Resposta da API
  */
 export async function getWalletByEoa(externallyOwnedAccount: string): Promise<GetWalletResponse> {
   const response = await fetch(`/api/wallet/get-by-eoa?externallyOwnedAccount=${externallyOwnedAccount}`);
@@ -61,8 +67,11 @@ export async function getWalletByEoa(externallyOwnedAccount: string): Promise<Ge
   return result;
 }
 
+
 /**
- * Busca o portfólio de uma carteira
+ * @description Busca o portfólio de uma carteira
+ * @param walletAddress - Endereço da carteira
+ * @returns Resposta da API
  */
 export async function getPortfolio(walletAddress: string): Promise<PortfolioResponse> {
   const response = await fetch(`/api/wallet/get-portfolio?walletAddress=${walletAddress}`);

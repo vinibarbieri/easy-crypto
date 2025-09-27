@@ -1,23 +1,44 @@
-// Serviços relacionados ao KYC (Know Your Customer)
-
 export interface KycSession {
   id: string;
-  // Adicione outros campos conforme a resposta real da API
   [key: string]: any;
 }
 
 export interface StartKycResponse {
   session: KycSession;
-  // Adicione outros campos conforme a resposta real da API
   [key: string]: any;
 }
 
+export interface KycUserData {
+  firstName: string,
+  lastName: string,
+  birthDate: string,
+  email: string,
+
+  // Documento
+  documentId: string,
+  documentCategory: string,
+  documentCountry: string,
+  
+  // Endereço
+  address: string, // Apenas a rua e número
+  city: string,
+  state: string,
+  postalCode: string, // CEP sem formatação
+
+  livenessRequired: boolean
+}
+
+
 /**
- * Inicia uma nova sessão de KYC
+ * @description Inicia uma nova sessão de KYC
+ * @param kycUserData - Dados do usuário para KYC
+ * @returns Resposta da API
  */
-export async function startKyc(): Promise<StartKycResponse> {
+export async function startKyc(kycUserData: KycUserData): Promise<StartKycResponse> {
   const response = await fetch('/api/kyc/start', { 
-    method: 'POST' 
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(kycUserData)
   });
   
   const result = await response.json();
@@ -30,8 +51,11 @@ export async function startKyc(): Promise<StartKycResponse> {
   return result;
 }
 
+
 /**
- * Verifica o status de uma sessão de KYC
+ * @description Verifica o status de uma sessão de KYC
+ * @param sessionId - ID da sessão de KYC
+ * @returns Resposta da API
  */
 export async function checkKycStatus(sessionId: string): Promise<any> {
   const response = await fetch(`/api/kyc/check-status?sessionId=${sessionId}`);
@@ -46,11 +70,17 @@ export async function checkKycStatus(sessionId: string): Promise<any> {
   return result;
 }
 
+
+/**
+ * @description Processa uma sessão de KYC
+ * @param sessionId - ID da sessão de KYC
+ * @returns Resposta da API
+ */
 export async function processKyc(sessionId: string): Promise<any> {
   const res = await fetch(`/api/kyc/process`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessionId: sessionId }),
+    body: JSON.stringify({ sessionId })
   });
 
   const result = await res.json();

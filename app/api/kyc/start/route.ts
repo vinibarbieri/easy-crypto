@@ -4,30 +4,31 @@ export async function POST(request: Request) {
   const apiKey = process.env.NOTUS_API_KEY;
   const baseUrl = process.env.NOTUS_API_BASE_URL;
 
-  // Para este teste, vamos usar dados fixos de um usuário fictício.
-  // Em um app real, esses dados viriam do frontend.
-  // A documentação em kyc-quickstart menciona CNH, então vamos usar essa categoria.
-   const kycUserData = {
-      firstName: "João",
-      lastName: "Silva Testador",
-      birthDate: "15-03-1990",
-      email: "joao.silva.testador@email.com", // <-- Campo obrigatório que faltava
-  
-      // Documento
-      documentId: "12345678901",
-      documentCategory: "DRIVERS_LICENSE",
-      documentCountry: "BRAZIL",
-      
-      // Endereço
-      address: "Rua dos Testes, 123", // Apenas a rua e número
-      city: "Florianópolis",
-      state: "SC",
-      postalCode: "88010000", // CEP sem formatação
-  
-      livenessRequired: false
-   };
-
   try {
+    // Receber os dados do usuário KYC do frontend
+    const kycUserData = await request.json();
+    
+    console.log('Dados do usuário KYC recebidos:', kycUserData);
+
+    // Validar campos obrigatórios
+    const requiredFields = [
+      'firstName', 'lastName', 'birthDate', 'email',
+      'documentId', 'documentCategory', 'documentCountry',
+      'address', 'city', 'state', 'postalCode'
+    ];
+
+    const missingFields = requiredFields.filter(field => !kycUserData[field]);
+    
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        { 
+          error: 'Campos obrigatórios ausentes', 
+          missingFields: missingFields 
+        }, 
+        { status: 400 }
+      );
+    }
+
     // Conforme a documentação: POST /kyc/individual-verification-sessions/standard
     const response = await fetch(`${baseUrl}/kyc/individual-verification-sessions/standard`, {
       method: 'POST',
