@@ -7,12 +7,12 @@ interface ApiResponseProps {
 
 export default function ApiResponse({ isLoading, error, responseJson, apiCalled }: ApiResponseProps) {
   return (
-    <section className="bg-gradient-to-r from-gray-800 to-gray-700 p-6 rounded-2xl border border-gray-600 shadow-xl">
+    <section className="bg-gradient-to-r from-gray-800 to-gray-700 p-4 rounded-2xl border border-gray-600 shadow-xl">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+        <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center">
           <span className="text-white font-bold">📡</span>
         </div>
-        <h2 className="text-2xl font-bold">API Response</h2>
+        <h2 className="text-xl font-bold">Notus API Response</h2>
         {isLoading && (
           <div className="flex items-center gap-2 ml-auto">
             <div className="animate-spin w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full"></div>

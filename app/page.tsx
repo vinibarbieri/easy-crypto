@@ -15,6 +15,7 @@ import {
 import Header from './components/layout/Header';
 import WalletInfo from './components/wallet/WalletInfo';
 import Button from './components/ui/button';
+import Tabs from './components/ui/tabs';
 import ApiResponse from './components/api-response/apiResponse';
 
 export default function Home() {
@@ -29,10 +30,10 @@ export default function Home() {
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    let pk = localStorage.getItem('ponteCriptoTesterPrivateKey');
+    let pk = localStorage.getItem('testerPrivateKey');
     if (!pk) {
       pk = generatePrivateKey();
-      localStorage.setItem('ponteCriptoTesterPrivateKey', pk);
+      localStorage.setItem('testerPrivateKey', pk);
     }
     const account = privateKeyToAccount(pk as `0x${string}`);
     setEoa(account);
@@ -165,115 +166,131 @@ export default function Home() {
   };
 
   const handleClearStorage = () => {
-    localStorage.removeItem('ponteCriptoTesterPrivateKey');
+    localStorage.removeItem('testerPrivateKey');
     window.location.reload();
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen p-6 font-sans">
-      <main className="max-w-6xl mx-auto flex flex-col gap-6">
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen p-4 font-sans">
+      <main className="max-w-7xl mx-auto flex flex-col gap-4">
         <Header />
 
-        <WalletInfo 
-          eoa={eoa}
-          smartWallet={smartWallet}
-          kycSessionId={kycSessionId}
-        />
-        
-        {/* Actions Section */}
-        <section className="bg-gradient-to-r from-gray-800 to-gray-700 p-6 rounded-2xl border border-gray-600 shadow-xl">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">⚡</span>
-            </div>
-            <h2 className="text-2xl font-bold">Track A Actions</h2>
-          </div>
+        {/* Top Section - Two Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Left Column - Wallet Info */}
+          <WalletInfo 
+            eoa={eoa}
+            smartWallet={smartWallet}
+            kycSessionId={kycSessionId}
+          />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {/* Wallet Actions */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-blue-300 mb-3">Wallet</h3>
-              <Button
-                onClick={handleCreateSmartWallet}
-                disabled={isLoading || !eoa}
-                color="blue"
-                icon="🏦"
-              >
-                1. Create Smart Wallet
-              </Button>
-              <Button
-                onClick={handleGetExistingWallet}
-                disabled={isLoading || !eoa}
-                color="blue"
-                icon="🔍"
-              >
-                1b. Check Existing Wallet
-              </Button>
+          {/* Right Column - Actions */}
+          <section className="bg-gradient-to-r from-gray-800 to-gray-700 p-3 rounded-xl border border-gray-600 shadow-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-5 h-5 bg-purple-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xs">⚡</span>
+              </div>
+              <h2 className="text-lg font-bold">Track A Actions</h2>
             </div>
+            
+            <Tabs 
+              tabs={[
+                { id: 'wallet', label: 'Wallet', icon: '🏦', color: 'blue' },
+                { id: 'portfolio', label: 'Portfolio', icon: '📊', color: 'green' },
+                { id: 'kyc', label: 'KYC', icon: '🚀', color: 'purple' },
+                { id: 'utils', label: 'Utils', icon: '⚙️', color: 'red' }
+              ]}
+              defaultTab="wallet"
+            >
+              {/* Wallet Tab */}
+              <div className="space-y-2">
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={handleCreateSmartWallet}
+                    disabled={isLoading || !eoa}
+                    color="blue"
+                    icon="🏦"
+                  >
+                    1. Create Smart Wallet
+                  </Button>
+                  <Button
+                    onClick={handleGetExistingWallet}
+                    disabled={isLoading || !eoa}
+                    color="blue"
+                    icon="🔍"
+                  >
+                    1b. Check Existing Wallet
+                  </Button>
+                </div>
+              </div>
 
-            {/* Portfolio Actions */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-green-300 mb-3">Portfolio</h3>
-              <Button
-                onClick={handleGetPortfolio}
-                disabled={isLoading || !smartWallet}
-                color="green"
-                icon="📊"
-              >
-                2. Check Portfolio
-              </Button>
-              <Button
-                onClick={handleGetHistory}
-                disabled={isLoading || !smartWallet}
-                color="green"
-                icon="📈"
-              >
-                3. Check History
-              </Button>
-            </div>
+              {/* Portfolio Tab */}
+              <div className="space-y-2">
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={handleGetPortfolio}
+                    disabled={isLoading || !smartWallet}
+                    color="green"
+                    icon="📊"
+                  >
+                    2. Check Portfolio
+                  </Button>
+                  <Button
+                    onClick={handleGetHistory}
+                    disabled={isLoading || !smartWallet}
+                    color="green"
+                    icon="📈"
+                  >
+                    3. Check History
+                  </Button>
+                </div>
+              </div>
 
-            {/* KYC Actions */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-purple-300 mb-3">KYC Process</h3>
-              <Button
-                onClick={handleStartKyc}
-                disabled={isLoading}
-                color="purple"
-                icon="🚀"
-              >
-                4. Start KYC
-              </Button>
-              <Button
-                onClick={handleCheckKycStatus}
-                disabled={isLoading || !kycSessionId}
-                color="purple"
-                icon="🔍"
-              >
-                5. Check Status
-              </Button>
-              <Button
-                onClick={handleProcessKyc}
-                disabled={isLoading || !kycSessionId}
-                color="purple"
-                icon="⚙️"
-              >
-                6. Process KYC
-              </Button>
-            </div>
+              {/* KYC Tab */}
+              <div className="space-y-2">
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={handleStartKyc}
+                    disabled={isLoading}
+                    color="purple"
+                    icon="🚀"
+                  >
+                    4. Start KYC
+                  </Button>
+                  <Button
+                    onClick={handleCheckKycStatus}
+                    disabled={isLoading || !kycSessionId}
+                    color="purple"
+                    icon="🔍"
+                  >
+                    5. Check Status
+                  </Button>
+                  <Button
+                    onClick={handleProcessKyc}
+                    disabled={isLoading || !kycSessionId}
+                    color="purple"
+                    icon="⚙️"
+                  >
+                    6. Process KYC
+                  </Button>
+                </div>
+              </div>
 
-            {/* Utility Actions */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-red-300 mb-3">Utilities</h3>
-              <Button
-                onClick={handleClearStorage}
-                color="red"
-                icon="🗑️"
-              >
-                Clear Storage
-              </Button>
-            </div>
-          </div>
-        </section>
+              {/* Utils Tab */}
+              <div className="space-y-2">
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={handleClearStorage}
+                    color="red"
+                    icon="🗑️"
+                  >
+                    Clear Storage
+                  </Button>
+                </div>
+              </div>
+            </Tabs>
+          </section>
+        </div>
         
         <ApiResponse 
           isLoading={isLoading}
