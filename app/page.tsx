@@ -85,7 +85,7 @@ export default function Home() {
     setError('');
     setResponseJson(null);
     try {
-      setApiCalled('GET /api/v1/wallets/{walletAddress}/portfolio');
+      setApiCalled(`GET /api/v1/wallets/${smartWallet.accountAbstraction}/portfolio`);
       const data = await getPortfolio(smartWallet.accountAbstraction);
       setResponseJson(data);
     } catch (err: any) {
@@ -106,7 +106,7 @@ export default function Home() {
     setError('');
     setResponseJson(null);
     try {
-      setApiCalled('POST /api/start-kyc');
+      setApiCalled('POST /kyc/individual-verification-sessions/standard');
       const data = await startKyc();
       
       setResponseJson(data);
@@ -130,7 +130,7 @@ export default function Home() {
     setError('');
     setResponseJson(null);
     try {
-      setApiCalled('GET /api/kyc-status');
+      setApiCalled(`GET /kyc/individual-verification-sessions/standard/${kycSessionId}`);
       const data = await checkKycStatus(kycSessionId);
       setResponseJson(data);
     } catch (err: any) {
@@ -152,7 +152,7 @@ export default function Home() {
     setResponseJson(null);
 
     try {
-      setApiCalled(`POST /api/process-kyc (sessionId: ${kycSessionId})`);
+      setApiCalled(`POST /kyc/individual-verification-sessions/standard/${kycSessionId}/process`);
       const data = processKyc(kycSessionId);
 
       setResponseJson(data);

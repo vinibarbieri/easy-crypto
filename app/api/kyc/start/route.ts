@@ -10,7 +10,7 @@ export async function POST(request: Request) {
    const kycUserData = {
       firstName: "João",
       lastName: "Silva Testador",
-      birthDate: "1990-03-15",
+      birthDate: "15-03-1990",
       email: "joao.silva.testador@email.com", // <-- Campo obrigatório que faltava
   
       // Documento
