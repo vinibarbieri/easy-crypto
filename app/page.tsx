@@ -78,8 +78,35 @@ export default function Home() {
   
   // --- Funções para os próximos passos (placeholders) ---
   const handleGetPortfolio = async () => {
-    alert('TODO: Implementar chamada para /api/get-portfolio');
-  }
+    if (!smartWallet) {
+      setError('Crie uma Smart Wallet primeiro');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setResponseJson(null);
+
+    try {
+      // Chama o backend, passando o endereço da smart wallet como parâmetro de busca
+      const res = await fetch(`/api/get-portfolio?walletAddress=${smartWallet.accountAbstraction}`);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Ocorreu um erro ao buscar o portfólio');
+      }
+
+      setResponseJson(data);
+
+    } catch (err: any) {
+      setError(err.message);
+      setResponseJson({ error: err.message });
+    } finally {
+      setIsLoading(false);
+    }
+  } 
+  
   const handleGetHistory = async () => {
     alert('TODO: Implementar chamada para /api/get-history');
   }
