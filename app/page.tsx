@@ -1,5 +1,3 @@
-// app/page.tsx (versão atualizada para o Teste 1.1)
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -18,6 +16,8 @@ interface SmartWallet {
 export default function Home() {
   const [eoa, setEoa] = useState<PrivateKeyAccount | null>(null);
   const [smartWallet, setSmartWallet] = useState<SmartWallet | null>(null);
+
+  const [apiCalled, setApiCalled] = useState<string>('');
   
   const [responseJson, setResponseJson] = useState<object | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -39,6 +39,7 @@ export default function Home() {
     setError('');
     setResponseJson(null);
     try {
+      setApiCalled('POST /api/v1/wallets/register');
       const res = await fetch('/api/create-smart-wallet', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,13 +59,13 @@ export default function Home() {
     }
   };
   
-  // NOVA FUNÇÃO PARA RECUPERAR A CARTEIRA
   const handleGetExistingWallet = async () => {
     if (!eoa) return;
     setIsLoading(true);
     setError('');
     setResponseJson(null);
     try {
+      setApiCalled('GET /api/v1/wallets/address');
       const res = await fetch(`/api/get-wallet-by-eoa?externallyOwnedAccount=${eoa.address}`);
       const data = await res.json();
       if (!res.ok) {
@@ -89,6 +90,7 @@ export default function Home() {
     setError('');
     setResponseJson(null);
     try {
+      setApiCalled('GET /api/v1/wallets/{walletAddress}/portfolio');
       const res = await fetch(`/api/get-portfolio?walletAddress=${smartWallet.accountAbstraction}`);
       const data = await res.json();
       if (!res.ok) {
@@ -104,11 +106,18 @@ export default function Home() {
   };
 
   const handleGetHistory = async () => {
+    setApiCalled('get-history');
     alert('TODO: Implementar chamada para /api/get-history');
   };
 
   const handleStartKyc = async () => {
+    setApiCalled('start-kyc');
     alert('TODO: Implementar chamada para /api/start-kyc');
+  };
+
+  const handleClearStorage = () => {
+    localStorage.removeItem('ponteCriptoTesterPrivateKey');
+    window.location.reload(); // Recarrega a página para gerar nova chave
   };
 
   return (
@@ -142,7 +151,6 @@ export default function Home() {
             >
               1. Criar Smart Wallet
             </button>
-            {/* NOVO BOTÃO ADICIONADO AQUI */}
             <button
               onClick={handleGetExistingWallet}
               disabled={isLoading || !eoa}
@@ -171,12 +179,19 @@ export default function Home() {
             >
               4. Iniciar KYC
             </button>
+            <button
+              onClick={handleClearStorage}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Limpar Storage
+            </button>
           </div>
         </section>
         
-        {/* Seção de Resposta (sem mudanças) */}
+        {/* Seção de Resposta da API*/}
         <section className="bg-gray-950 p-4 rounded-lg min-h-[200px]">
           <h2 className="text-xl font-semibold mb-2">Resposta da API</h2>
+          <p className="text-sm">{apiCalled}</p>
           {isLoading && <p className="text-yellow-400">Carregando...</p>}
           {error && <pre className="text-red-400 whitespace-pre-wrap">{error}</pre>}
           {responseJson && (
