@@ -3,19 +3,20 @@
 import { useState, useEffect } from 'react';
 import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
 import type { PrivateKeyAccount } from 'viem/accounts';
-
-interface SmartWallet {
-  id: string;
-  accountAbstraction: string;
-  externallyOwnedAccount: string;
-  factory: string;
-  salt: string;
-  registeredAt: string;
-}
+import { 
+  SmartWallet, 
+  createSmartWallet, 
+  getWalletByEoa, 
+  getPortfolio,
+  startKyc,
+  checkKycStatus,
+  processKyc
+} from './services';
 
 export default function Home() {
   const [eoa, setEoa] = useState<PrivateKeyAccount | null>(null);
   const [smartWallet, setSmartWallet] = useState<SmartWallet | null>(null);
+  const [kycSessionId, setKycSessionId] = useState<string | null>(null);
 
   const [apiCalled, setApiCalled] = useState<string>('');
   
@@ -40,16 +41,7 @@ export default function Home() {
     setResponseJson(null);
     try {
       setApiCalled('POST /api/v1/wallets/register');
-      const res = await fetch('/api/create-smart-wallet', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ externallyOwnedAccount: eoa.address }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        const errorMessage = data.error || data.message || JSON.stringify(data) || 'Ocorreu um erro ao criar a carteira.';
-        throw new Error(errorMessage);
-      }
+      const data = await createSmartWallet({ externallyOwnedAccount: eoa.address });
       setSmartWallet(data.wallet);
       setResponseJson(data);
     } catch (err: any) {
@@ -68,13 +60,8 @@ export default function Home() {
     setResponseJson(null);
     try {
       setApiCalled('GET /api/v1/wallets/address');
-      const res = await fetch(`/api/get-wallet-by-eoa?externallyOwnedAccount=${eoa.address}`);
-      const data = await res.json();
-      if (!res.ok) {
-        const errorMessage = data.error || data.message || JSON.stringify(data) || 'Ocorreu um erro ao verificar a carteira.';
-        throw new Error(errorMessage);
-      }
-      setSmartWallet(data.wallet); // Atualiza o estado com a carteira recuperada
+      const data = await getWalletByEoa(eoa.address);
+      setSmartWallet(data.wallet);
       setResponseJson(data);
     } catch (err: any) {
       setError(err.message);
@@ -94,11 +81,7 @@ export default function Home() {
     setResponseJson(null);
     try {
       setApiCalled('GET /api/v1/wallets/{walletAddress}/portfolio');
-      const res = await fetch(`/api/get-portfolio?walletAddress=${smartWallet.accountAbstraction}`);
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Ocorreu um erro ao buscar o portfólio.');
-      }
+      const data = await getPortfolio(smartWallet.accountAbstraction);
       setResponseJson(data);
     } catch (err: any) {
       setError(err.message);
@@ -114,8 +97,69 @@ export default function Home() {
   };
 
   const handleStartKyc = async () => {
-    setApiCalled('start-kyc');
-    alert('TODO: Implementar chamada para /api/start-kyc');
+    setIsLoading(true);
+    setError('');
+    setResponseJson(null);
+    try {
+      setApiCalled('POST /api/start-kyc');
+      const data = await startKyc();
+      
+      // Salva a resposta completa para exibição
+      setResponseJson(data);
+      // Extrai e salva o ID da sessão para o próximo passo
+      if (data.session && data.session.id) {
+        setKycSessionId(data.session.id);
+      }
+    } catch (err: any) {
+      setError(err.message);
+      setResponseJson({ error: err.message });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCheckKycStatus = async () => {
+    if(!kycSessionId) {
+      alert('Inicie uma sessão KYC primeiro para obter um Session ID.');
+      return;
+    }
+    setIsLoading(true);
+    setError('');
+    setResponseJson(null);
+    try {
+      setApiCalled('GET /api/kyc-status');
+      const data = await checkKycStatus(kycSessionId);
+      setResponseJson(data);
+    } catch (err: any) {
+      setError(err.message);
+      setResponseJson({ error: err.message });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleProcessKyc = async () => {
+    if(!kycSessionId) {
+      alert('Inicie uma sessão KYC primeiro para obter um Session ID.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError('');
+    setResponseJson(null);
+
+    try {
+      setApiCalled(`POST /api/process-kyc (sessionId: ${kycSessionId})`);
+      const data = processKyc(kycSessionId);
+
+      setResponseJson(data);
+
+    } catch (err: any) {
+      setError(err.message);
+      setResponseJson({ error: err.message });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClearStorage = () => {
@@ -136,7 +180,8 @@ export default function Home() {
           {eoa ? (
             <div className="font-mono text-sm break-all">
               <p><strong>EOA Address:</strong> {eoa.address}</p>
-              <p><strong>Smart Wallet:</strong> {smartWallet?.accountAbstraction || 'Ainda não criada ou recuperada'}</p>
+              <p><strong>Smart Wallet:</strong> {smartWallet?.accountAbstraction || 'N/A'}</p>
+              <p className="text-purple-400"><strong>KYC Session ID:</strong> {kycSessionId || 'N/A'}</p>
             </div>
           ) : (
             <p>Gerando carteira de testes...</p>
@@ -181,6 +226,20 @@ export default function Home() {
               className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded"
             >
               4. Iniciar KYC
+            </button>
+            <button
+              onClick={handleCheckKycStatus}
+              disabled={isLoading || !kycSessionId}
+              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+            >
+              5. Verificar Status KYC
+            </button>
+            <button
+              onClick={handleProcessKyc}
+              disabled={isLoading || !kycSessionId}
+              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+            >
+              6. Processar KYC
             </button>
             <button
               onClick={handleClearStorage}
