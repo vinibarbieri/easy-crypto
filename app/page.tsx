@@ -1,103 +1,157 @@
-import Image from "next/image";
+// app/page.tsx
+
+"use client"; // Marca este componente como interativo (Client Component)
+
+import { useState, useEffect } from 'react';
+import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
+import type { PrivateKeyAccount } from 'viem/accounts';
+
+// Tipagem para a resposta da Smart Wallet (baseado na documentação)
+interface SmartWallet {
+  id: string;
+  accountAbstraction: string;
+  externallyOwnedAccount: string;
+  factory: string;
+  salt: string;
+  registeredAt: string;
+}
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  // Estados para gerenciar as informações na tela
+  const [eoa, setEoa] = useState<PrivateKeyAccount | null>(null);
+  const [smartWallet, setSmartWallet] = useState<SmartWallet | null>(null);
+  
+  const [responseJson, setResponseJson] = useState<object | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  // Efeito que roda uma vez quando a página carrega
+  useEffect(() => {
+    // Procura por uma chave privada no armazenamento local do navegador
+    let pk = localStorage.getItem('easyCryptoTesterPrivateKey');
+    
+    // Se não encontrar, cria uma nova e salva
+    if (!pk) {
+      console.log("Nenhuma chave privada encontrada. Gerando uma nova...");
+      pk = generatePrivateKey();
+      localStorage.setItem('easyCryptoTesterPrivateKey', pk);
+    }
+
+    // Cria a conta (EOA) a partir da chave privada
+    const account = privateKeyToAccount(pk as `0x${string}`);
+    setEoa(account);
+  }, []); // O array vazio [] garante que isso só rode na montagem do componente
+
+  // Função para chamar nossa API BFF e criar a Smart Wallet
+  const handleCreateSmartWallet = async () => {
+    if (!eoa) return; // Garante que a EOA já foi carregada
+
+    setIsLoading(true);
+    setError('');
+    setResponseJson(null);
+
+    try {
+      const res = await fetch('/api/create-smart-wallet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ externallyOwnedAccount: eoa.address }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Se a API retornar um erro, lança uma exceção para ser pega no catch
+        throw new Error(data.message || 'Ocorreu um erro ao criar a carteira.');
+      }
+      
+      // Se deu tudo certo, atualiza os estados
+      setSmartWallet(data.wallet);
+      setResponseJson(data);
+
+    } catch (err: any) {
+      setError(err.message);
+      setResponseJson({ error: err.message });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // --- Funções para os próximos passos (placeholders) ---
+  const handleGetPortfolio = async () => {
+    alert('TODO: Implementar chamada para /api/get-portfolio');
+  }
+  const handleGetHistory = async () => {
+    alert('TODO: Implementar chamada para /api/get-history');
+  }
+  const handleStartKyc = async () => {
+    alert('TODO: Implementar chamada para /api/start-kyc');
+  }
+
+  return (
+    <div className="bg-gray-900 text-white min-h-screen p-8 font-sans">
+      <main className="max-w-4xl mx-auto flex flex-col gap-8">
+        <header className="text-center">
+          <h1 className="text-4xl font-bold">Ponte Cripto Fácil</h1>
+          <p className="text-lg text-gray-400">Painel de Testes - Notus API (Trilha A)</p>
+        </header>
+
+        <section className="bg-gray-800 p-4 rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Informações da Carteira</h2>
+          {eoa ? (
+            <div className="font-mono text-sm break-all">
+              <p><strong>EOA Address:</strong> {eoa.address}</p>
+              <p><strong>Smart Wallet:</strong> {smartWallet?.accountAbstraction || 'Ainda não criada'}</p>
+            </div>
+          ) : (
+            <p>Gerando carteira de testes...</p>
+          )}
+        </section>
+
+        <section className="bg-gray-800 p-4 rounded-lg">
+          <h2 className="text-xl font-semibold mb-4">Ações da Trilha A</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button
+              onClick={handleCreateSmartWallet}
+              disabled={isLoading || !eoa}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+            >
+              1. Criar Smart Wallet
+            </button>
+            <button
+              onClick={handleGetPortfolio}
+              disabled={isLoading || !smartWallet}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+            >
+              2. Ver Portfólio
+            </button>
+            <button
+              onClick={handleGetHistory}
+              disabled={isLoading || !smartWallet}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+            >
+              3. Ver Histórico
+            </button>
+            <button
+              onClick={handleStartKyc}
+              disabled={isLoading}
+              className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+            >
+              4. Iniciar KYC
+            </button>
+          </div>
+        </section>
+
+        <section className="bg-gray-950 p-4 rounded-lg min-h-[200px]">
+          <h2 className="text-xl font-semibold mb-2">Resposta da API</h2>
+          {isLoading && <p className="text-yellow-400">Carregando...</p>}
+          {error && <pre className="text-red-400 whitespace-pre-wrap">{error}</pre>}
+          {responseJson && (
+            <pre className="text-green-300 text-xs whitespace-pre-wrap overflow-x-auto">
+              {JSON.stringify(responseJson, null, 2)}
+            </pre>
+          )}
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
