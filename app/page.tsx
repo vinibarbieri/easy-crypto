@@ -47,11 +47,13 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Ocorreu um erro ao criar a carteira.');
+        const errorMessage = data.error || data.message || JSON.stringify(data) || 'Ocorreu um erro ao criar a carteira.';
+        throw new Error(errorMessage);
       }
       setSmartWallet(data.wallet);
       setResponseJson(data);
     } catch (err: any) {
+      console.log(err);
       setError(err.message);
       setResponseJson({ error: err.message });
     } finally {
@@ -69,7 +71,8 @@ export default function Home() {
       const res = await fetch(`/api/get-wallet-by-eoa?externallyOwnedAccount=${eoa.address}`);
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Ocorreu um erro ao verificar a carteira.');
+        const errorMessage = data.error || data.message || JSON.stringify(data) || 'Ocorreu um erro ao verificar a carteira.';
+        throw new Error(errorMessage);
       }
       setSmartWallet(data.wallet); // Atualiza o estado com a carteira recuperada
       setResponseJson(data);
