@@ -1,11 +1,11 @@
 export interface KycSession {
   id: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface StartKycResponse {
   session: KycSession;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface KycUserData {
@@ -57,7 +57,7 @@ export async function startKyc(kycUserData: KycUserData): Promise<StartKycRespon
  * @param sessionId - ID da sessão de KYC
  * @returns Resposta da API
  */
-export async function checkKycStatus(sessionId: string): Promise<any> {
+export async function checkKycStatus(sessionId: string): Promise<unknown> {
   const response = await fetch(`/api/kyc/check-status?sessionId=${sessionId}`);
 
   const result = await response.json();
@@ -76,7 +76,7 @@ export async function checkKycStatus(sessionId: string): Promise<any> {
  * @param sessionId - ID da sessão de KYC
  * @returns Resposta da API
  */
-export async function processKyc(sessionId: string): Promise<any> {
+export async function processKyc(sessionId: string): Promise<unknown> {
   const res = await fetch(`/api/kyc/process`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

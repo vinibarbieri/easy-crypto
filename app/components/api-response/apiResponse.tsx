@@ -1,7 +1,7 @@
 interface ApiResponseProps {
   isLoading: boolean;
   error: string;
-  responseJson: object | null;
+  responseJson: unknown;
   apiCalled: string;
 }
 

@@ -11,7 +11,8 @@ import {
   startKyc,
   checkKycStatus,
   processKyc,
-  getHistory
+  getHistory,
+  KycUserData
 } from './services';
 import Header from './components/layout/Header';
 import WalletInfo from './components/wallet/WalletInfo';
@@ -28,12 +29,20 @@ export default function Home() {
 
   const [apiCalled, setApiCalled] = useState<string>('');
   
-  const [responseJson, setResponseJson] = useState<object | null>(null);
+  const [responseJson, setResponseJson] = useState<unknown>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
   // Modal states
   const [isKycModalOpen, setIsKycModalOpen] = useState<boolean>(false);
+
+  // Helper function to handle errors
+  const handleError = (err: unknown): string => {
+    if (err instanceof Error) {
+      return err.message;
+    }
+    return 'An unknown error occurred';
+  };
 
   useEffect(() => {
     let pk = localStorage.getItem('testerPrivateKey');
@@ -55,10 +64,11 @@ export default function Home() {
       const data = await createSmartWallet({ externallyOwnedAccount: eoa.address });
       setSmartWallet(data.wallet);
       setResponseJson(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.log(err);
-      setError(err.message);
-      setResponseJson({ error: err.message });
+      const errorMessage = handleError(err);
+      setError(errorMessage);
+      setResponseJson({ error: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -74,9 +84,10 @@ export default function Home() {
       const data = await getWalletByEoa(eoa.address);
       setSmartWallet(data.wallet);
       setResponseJson(data);
-    } catch (err: any) {
-      setError(err.message);
-      setResponseJson({ error: err.message });
+    } catch (err: unknown) {
+      const errorMessage = handleError(err);
+      setError(errorMessage);
+      setResponseJson({ error: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -94,9 +105,10 @@ export default function Home() {
       setApiCalled(`GET /api/v1/wallets/${smartWallet.accountAbstraction}/portfolio`);
       const data = await getPortfolio(smartWallet.accountAbstraction);
       setResponseJson(data);
-    } catch (err: any) {
-      setError(err.message);
-      setResponseJson({ error: err.message });
+    } catch (err: unknown) {
+      const errorMessage = handleError(err);
+      setError(errorMessage);
+      setResponseJson({ error: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -118,15 +130,16 @@ export default function Home() {
 
       setResponseJson(data);
 
-    } catch (err: any) {
-      setError(err.message);
-      setResponseJson({ error: err.message });
+    } catch (err: unknown) {
+      const errorMessage = handleError(err);
+      setError(errorMessage);
+      setResponseJson({ error: errorMessage });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleStartKyc = async (kycUserData: any) => {
+  const handleStartKyc = async (kycUserData: KycUserData) => {
     setIsLoading(true);
     setError('');
     setResponseJson(null);
@@ -139,9 +152,10 @@ export default function Home() {
         setKycSessionId(data.session.id);
       }
       setIsKycModalOpen(false); // Fechar modal após sucesso
-    } catch (err: any) {
-      setError(err.message);
-      setResponseJson({ error: err.message });
+    } catch (err: unknown) {
+      const errorMessage = handleError(err);
+      setError(errorMessage);
+      setResponseJson({ error: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -167,9 +181,10 @@ export default function Home() {
       setApiCalled(`GET /kyc/individual-verification-sessions/standard/${kycSessionId}`);
       const data = await checkKycStatus(kycSessionId);
       setResponseJson(data);
-    } catch (err: any) {
-      setError(err.message);
-      setResponseJson({ error: err.message });
+    } catch (err: unknown) {
+      const errorMessage = handleError(err);
+      setError(errorMessage);
+      setResponseJson({ error: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -191,9 +206,10 @@ export default function Home() {
 
       setResponseJson(data);
 
-    } catch (err: any) {
-      setError(err.message);
-      setResponseJson({ error: err.message });
+    } catch (err: unknown) {
+      const errorMessage = handleError(err);
+      setError(errorMessage);
+      setResponseJson({ error: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -224,9 +240,10 @@ export default function Home() {
 
       setResponseJson(data);
 
-    } catch (err: any) {
-      setError(err.message);
-      setResponseJson({ error: err.message });
+    } catch (err: unknown) {
+      const errorMessage = handleError(err);
+      setError(errorMessage);
+      setResponseJson({ error: errorMessage });
     } finally {
       setIsLoading(false);
     }
