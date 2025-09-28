@@ -25,6 +25,11 @@ export interface PortfolioResponse {
   portfolio: string[];
 }
 
+export interface HistoryResponse {
+  history: string[];
+}
+
+
 
 /**
  * @description Cria uma nova carteira inteligente
@@ -80,6 +85,24 @@ export async function getPortfolio(walletAddress: string): Promise<PortfolioResp
   
   if (!response.ok) {
     throw new Error(result.message || 'Ocorreu um erro ao buscar o portfólio.');
+  }
+
+  return result;
+}
+
+
+/**
+ * @description Busca o histórico de uma carteira
+ * @param walletAddress - Endereço da carteira
+ * @returns Resposta da API
+ */
+export async function getHistory(walletAddress: string): Promise<HistoryResponse> {
+  const response = await fetch(`/api/wallet/get-history?walletAddress=${walletAddress}`);
+
+  const result = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(result.message || 'Ocorreu um erro ao buscar o histórico.');
   }
 
   return result;

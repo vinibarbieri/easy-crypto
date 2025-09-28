@@ -10,7 +10,8 @@ import {
   getPortfolio,
   startKyc,
   checkKycStatus,
-  processKyc
+  processKyc,
+  getHistory
 } from './services';
 import Header from './components/layout/Header';
 import WalletInfo from './components/wallet/WalletInfo';
@@ -102,8 +103,27 @@ export default function Home() {
   };
 
   const handleGetHistory = async () => {
-    setApiCalled('get-history');
-    alert('TODO: Implement the call to /api/get-history');
+    if (!smartWallet) {
+      setError('Crie ou recupere uma Smart Wallet primeiro.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError('');
+    setResponseJson(null);
+
+    try {
+      setApiCalled(`GET /api/v1/wallets/${smartWallet.accountAbstraction}/history`);
+      const data = await getHistory(smartWallet.accountAbstraction);
+
+      setResponseJson(data);
+
+    } catch (err: any) {
+      setError(err.message);
+      setResponseJson({ error: err.message });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleStartKyc = async (kycUserData: any) => {
@@ -179,6 +199,39 @@ export default function Home() {
     }
   };
 
+  const handleFiatDepositQuote = async () => {
+    if(!smartWallet) {
+      alert('Crie ou recupere uma Smart Wallet primeiro.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError('');
+    setResponseJson(null);
+
+    try {
+      setApiCalled(`POST /fiat/deposit/quote`);
+      const res = await fetch(`/api/fiat/deposit-quote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress: smartWallet.accountAbstraction }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(JSON.stringify(data));
+      }
+
+      setResponseJson(data);
+
+    } catch (err: any) {
+      setError(err.message);
+      setResponseJson({ error: err.message });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleClearStorage = () => {
     localStorage.removeItem('testerPrivateKey');
     window.location.reload();
@@ -212,6 +265,7 @@ export default function Home() {
                 { id: 'wallet', label: 'Wallet', icon: '🏦', color: 'blue' },
                 { id: 'portfolio', label: 'Portfolio', icon: '📊', color: 'green' },
                 { id: 'kyc', label: 'KYC', icon: '🚀', color: 'purple' },
+                { id: 'fiat', label: 'Fiat', icon: '💵', color: 'yellow' },
                 { id: 'utils', label: 'Utils', icon: '⚙️', color: 'red' }
               ]}
               defaultTab="wallet"
@@ -225,7 +279,7 @@ export default function Home() {
                     color="blue"
                     icon="🏦"
                   >
-                    1. Create Smart Wallet
+                    Create Smart Wallet
                   </Button>
                   <Button
                     onClick={handleGetExistingWallet}
@@ -233,7 +287,7 @@ export default function Home() {
                     color="blue"
                     icon="🔍"
                   >
-                    1b. Check Existing Wallet
+                    Check Existing Wallet
                   </Button>
                 </div>
               </div>
@@ -247,7 +301,7 @@ export default function Home() {
                     color="green"
                     icon="📊"
                   >
-                    2. Check Portfolio
+                    Check Portfolio
                   </Button>
                   <Button
                     onClick={handleGetHistory}
@@ -255,7 +309,7 @@ export default function Home() {
                     color="green"
                     icon="📈"
                   >
-                    3. Check History
+                    Check History
                   </Button>
                 </div>
               </div>
@@ -269,7 +323,7 @@ export default function Home() {
                     color="purple"
                     icon="🚀"
                   >
-                    4. Start KYC
+                    Start KYC
                   </Button>
                   <Button
                     onClick={handleCheckKycStatus}
@@ -277,7 +331,7 @@ export default function Home() {
                     color="purple"
                     icon="🔍"
                   >
-                    5. Check Status
+                    Check Status
                   </Button>
                   <Button
                     onClick={handleProcessKyc}
@@ -285,11 +339,24 @@ export default function Home() {
                     color="purple"
                     icon="⚙️"
                   >
-                    6. Process KYC
+                    Process KYC
                   </Button>
                 </div>
               </div>
 
+              {/* Fiat Tab */}
+              <div className="space-y-2">
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={handleFiatDepositQuote}
+                    color="yellow"
+                    icon="💵"
+                  >
+                    Fiat Deposit Quote
+                  </Button>
+                </div>
+              </div>
+              
               {/* Utils Tab */}
               <div className="space-y-2">
                 <div className="flex flex-col gap-2">

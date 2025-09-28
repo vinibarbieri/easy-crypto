@@ -13,12 +13,6 @@ export default function ApiResponse({ isLoading, error, responseJson, apiCalled 
           <span className="text-white font-bold">📡</span>
         </div>
         <h2 className="text-xl font-bold">Notus API Response</h2>
-        {isLoading && (
-          <div className="flex items-center gap-2 ml-auto">
-            <div className="animate-spin w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full"></div>
-            <span className="text-yellow-400 font-medium">Processing...</span>
-          </div>
-        )}
       </div>
       
       {apiCalled && (
@@ -50,13 +44,20 @@ export default function ApiResponse({ isLoading, error, responseJson, apiCalled 
             </pre>
           </div>
         ) : (
+          isLoading ? (
+          <div className="flex items-center justify-center gap-2 w-full">
+            <div className="animate-spin w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full"></div>
+            <span className="text-yellow-400 font-medium">Processing...</span>
+          </div>
+        ) : (
           <div className="flex items-center justify-center w-full text-gray-500">
             <div className="text-center">
               <div className="text-4xl mb-2">📋</div>
               <p>No response yet</p>
               <p className="text-sm">Execute an action to see the API response</p>
+              </div>
             </div>
-          </div>
+          )
         )}
       </div>
     </section>
