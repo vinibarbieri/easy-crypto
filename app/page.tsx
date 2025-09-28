@@ -20,7 +20,7 @@ import Button from './components/ui/button';
 import Tabs from './components/ui/tabs';
 import Modal from './components/ui/modal';
 import KycForm from './components/forms/KycForm';
-import ApiResponse from './components/api-response/ApiResponse';
+import ApiResponse from './components/api-response/apiResponse';
 
 export default function Home() {
   const [eoa, setEoa] = useState<PrivateKeyAccount | null>(null);
