@@ -23,13 +23,13 @@ export default function Tabs({ tabs, children, defaultTab }: TabsProps) {
   return (
     <div className="w-full">
       {/* Tab Headers */}
-      <div className="flex border-b border-gray-600 mb-4">
+      <div className="flex border-b border-gray-600 mb-4 flex-col md:flex-row ">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`
-              flex items-center gap-2 px-4 py-2 font-medium transition-colors
+              flex items-center gap-2 px-4 py-2 font-medium transition-colors justify-center
               ${activeTab === tab.id 
                 ? `text-${tab.color}-400 border-b-2 border-${tab.color}-400 bg-gray-800` 
                 : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800'
